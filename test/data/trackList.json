@@ -1,8 +1,6 @@
 {
   "formatVersion": 1,
-  "plugins": [
-    "vcfview"
-  ],
+  "plugins": ["vcfview"],
   "tracks": [
     {
       "category": "Reference sequence",
@@ -22,13 +20,12 @@
       "type": "JBrowse/View/Track/HTMLVariants"
     },
     {
-      "storeClass": "vcfview/Store/SeqFeature/vcfview",
+      "storeClass": "vcfview/Store/SeqFeature/SegmentationMultiBin",
       "key": "New plugin",
       "label": "plugin_example",
       "urlTemplate": "gvcf.vcf.gz",
       "type": "JBrowse/View/Track/Wiggle/XYPlot",
       "max_score": 100
-
     }
   ]
 }

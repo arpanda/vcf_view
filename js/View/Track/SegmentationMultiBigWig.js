@@ -66,4 +66,4 @@ define([
       return options;
     },
   });
-});
+}
