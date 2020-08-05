@@ -42,17 +42,7 @@ define([
         query.ref,
       );
 
-      const end = this.browser.view.ref.end;
-      let binSize = 100000;
-      var bins = [];
-      for (let i = 0; i < end; i += binSize) {
-        bins.push({
-          samples: samples.map(() => ({ score: 0, count: 0 })),
-        });
-      }
-
-      let averages = samples.map(() => ({ scores: [] }));
-
+      var features = [];
       await this.indexedData.getLines(
         regularizedReferenceName,
         0,
@@ -61,29 +51,21 @@ define([
           const fields = line.split('\t');
           const start = +fields[1];
           const format = fields[8].split(':');
-          const DP = format.indexOf('DP');
-          const featureBin = Math.max(Math.floor(start / binSize), 0);
-          bins[featureBin].start = featureBin * binSize;
-          bins[featureBin].end = (featureBin + 1) * binSize;
-          bins[featureBin].id = fileOffset;
-          for (let i = 0; i < samples.length; i++) {
-            const sampleName = samples[i];
-            const score = +fields[9 + i].split(':')[DP];
-            averages[i].scores.push(isNaN(score) ? 0 : score);
-            bins[featureBin].samples[i].score += isNaN(score) ? 0 : score;
-            bins[featureBin].samples[i].count++;
-            bins[featureBin].samples[i].source = sampleName;
+          const AD = format.indexOf('AD');
+          if (AD) {
+            const [ALT, REF] = fields[9].split(':')[AD].split(',');
+            features.push({
+              score: +ALT / (+ALT + +REF),
+              start,
+              end: start + 1,
+              uniqueId: fileOffset,
+            });
           }
         },
       );
-      bins.forEach(bin => {
-        bin.samples.forEach((sample, index) => {
-          sample.score =
-            (sample.score / sample.count - getMean(averages[index].scores)) /
-            getSD(averages[index].scores);
-        });
-      });
-      return bins;
+      console.log({ features });
+
+      return features;
     },
 
     async _getFeatures(
@@ -96,16 +78,11 @@ define([
         const features = await this.featureCache.get(query.ref, query);
         features.forEach(feature => {
           if (feature.end > query.start && feature.start < query.end) {
-            feature.samples.forEach(sample => {
-              featureCallback(
-                new SimpleFeature({
-                  data: Object.assign(Object.create(feature), {
-                    score: sample.score,
-                    source: sample.source,
-                  }),
-                }),
-              );
-            });
+            featureCallback(
+              new SimpleFeature({
+                data: Object.assign(Object.create(feature)),
+              }),
+            );
           }
         });
 

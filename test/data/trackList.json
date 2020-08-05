@@ -98,6 +98,15 @@
         { "name": "NA12878", "color": "orange" },
         { "name": "NA12882", "color": "blue" }
       ]
+    },
+    {
+      "urlTemplate": "inputVcfs/trio.vcf.gz",
+      "storeClass": "vcfview/Store/SeqFeature/VCFRawBAF",
+      "type": "JBrowse/View/Track/Wiggle/XYPlot",
+      "label": "trio vcf baf",
+      "chunkSizeLimit": 100000000,
+      "max_score": 1,
+      "noFill": true
     }
   ]
 }
